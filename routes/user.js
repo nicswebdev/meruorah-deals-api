@@ -69,6 +69,17 @@ router.get("/", verifyTokenAndAdmin, async (req, res) => {
     }
 });
 
+//Get All Member
+router.get("/member", verifyTokenAndAdmin, async (req, res) => {
+    try {
+        const users = await User.aggregate([{ $match: { isAdmin: false } }]);
+
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
 //Get User Stats
 router.get("/stats", verifyTokenAndAdmin, async (req, res) => {
     const date = new Date();

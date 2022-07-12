@@ -7,6 +7,8 @@ const {
 
 const router = require("express").Router();
 
+const ObjectId = require("mongoose").Types.ObjectId;
+
 //Create
 // router.post("/", verifyToken, async (req, res) => {
 //   const newOrder = new Order(req.body);
@@ -71,6 +73,32 @@ router.get("/find/:userId", verifyTokenAndAuthorization, async (req, res) => {
     }
 });
 
+//Get Order
+router.get("/details/find/:id", async (req, res) => {
+    try {
+        // const orders = await Order.findById(req.params.id);
+
+        const orders = await Order.aggregate([
+            {
+                $match: { _id: ObjectId(req.params.id) },
+            },
+            { $set: { userId: { $toObjectId: "$userId" } } },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "user_data",
+                },
+            },
+        ]);
+
+        res.status(200).json(orders);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
 //Get All Orders
 router.get("/", verifyTokenAndAdmin, async (req, res) => {
     const qNew = req.query.new;
@@ -98,7 +126,20 @@ router.get("/", verifyTokenAndAdmin, async (req, res) => {
                 },
             ]);
         } else {
-            orders = await Order.find();
+            orders = await Order.aggregate([
+                { $set: { userId: { $toObjectId: "$userId" } } },
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "userId",
+                        foreignField: "_id",
+                        as: "user_data",
+                    },
+                },
+                {
+                    $sort: { createdAt: -1 },
+                },
+            ]);
         }
 
         res.status(200).json(orders);
