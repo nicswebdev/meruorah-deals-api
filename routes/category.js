@@ -55,10 +55,21 @@ router.get("/find/:id", async (req, res) => {
     }
 });
 
-// //Get All Category
+//Get All Category
 router.get("/", async (req, res) => {
     try {
         const categories = await Category.find();
+
+        res.status(200).json(categories);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
+//Get Nav Category
+router.get("/nav-cat", async (req, res) => {
+    try {
+        const categories = await Category.find().limit(5);
 
         res.status(200).json(categories);
     } catch (error) {

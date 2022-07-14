@@ -85,4 +85,34 @@ router.get("/", async (req, res) => {
     }
 });
 
+//Get highlight deals
+router.get("/highlight", async (req, res) => {
+    try {
+        const deals = await Deals.aggregate([
+            {
+                $sample: { size: 1 },
+            },
+        ]);
+
+        res.status(200).json(deals);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
+//Get featured deals
+router.get("/featured", async (req, res) => {
+    try {
+        const deals = await Deals.aggregate([
+            {
+                $sample: { size: 3 },
+            },
+        ]);
+
+        res.status(200).json(deals);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
 module.exports = router;
